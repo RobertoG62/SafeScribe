@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SafeScribe V5 Hybrid</title>
+    <title>SafeScribe V5.1 Sound</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -21,7 +21,6 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
         
-        /* Language Toggle Animation */
         .lang-btn.active { background-color: #e0e7ff; border-color: #6366f1; color: #4338ca; transform: scale(1.05); }
     </style>
 </head>
@@ -31,7 +30,7 @@
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <i class="fas fa-globe-americas text-teal-400 text-xl"></i>
-                <h1 class="text-lg font-bold tracking-wide">SafeScribe <span class="text-[10px] bg-purple-600 px-1.5 py-0.5 rounded ml-1 align-middle">V5 HYBRID</span></h1>
+                <h1 class="text-lg font-bold tracking-wide">SafeScribe <span class="text-[10px] bg-purple-600 px-1.5 py-0.5 rounded ml-1 align-middle">V5.1 SOUND</span></h1>
             </div>
             <button onclick="newMeeting()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded border border-slate-600 transition flex items-center gap-2">
                 <i class="fas fa-file-circle-plus"></i> חדש
@@ -63,7 +62,7 @@
                         <span>🇺🇸</span> English
                     </button>
                 </div>
-                <p class="text-[10px] text-gray-400">לחץ להחלפת שפה בזמן אמת</p>
+                <p class="text-[10px] text-gray-400">צפצוף יישמע בתחילת הקלטה</p>
             </div>
 
             <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100 min-h-[50px] flex flex-col justify-center">
@@ -99,7 +98,7 @@
         let isRecording = false;
         let transcriptData = [];
         let wakeLock = null;
-        let currentLang = 'he-IL'; // שפת ברירת מחדל
+        let currentLang = 'he-IL';
 
         const mainBtn = document.getElementById('mainBtn');
         const btnIcon = document.getElementById('btnIcon');
@@ -109,7 +108,6 @@
         const container = document.getElementById('transcriptContainer');
         const langDisplay = document.getElementById('currentLangDisplay');
 
-        // אתחול מערכת
         function initRecognition() {
             if ('webkitSpeechRecognition' in window) {
                 recognition = new webkitSpeechRecognition();
@@ -121,6 +119,7 @@
                     isRecording = true;
                     updateStatus('recording');
                     requestWakeLock();
+                    playFeedbackTone(600, 150); // צפצוף התחלה (גבוה)
                 };
 
                 recognition.onresult = (event) => {
@@ -135,14 +134,12 @@
                     if(interimTranscript) {
                         interimDisplay.innerText = interimTranscript;
                         interimDisplay.style.opacity = "1";
-                        // כיוון טקסט לפי שפה
                         interimDisplay.style.direction = currentLang === 'he-IL' ? 'rtl' : 'ltr';
                     }
                 };
 
                 recognition.onend = () => {
                     if (isRecording) {
-                        // הפעלה מחדש אוטומטית (גם אחרי החלפת שפה)
                         recognition.start(); 
                     } else {
                         updateStatus('idle');
@@ -165,27 +162,18 @@
 
         initRecognition();
 
-        // החלפת שפה דינמית
         function changeLang(lang) {
-            if (currentLang === lang) return; // אין שינוי
-            
+            if (currentLang === lang) return;
             currentLang = lang;
-            
-            // עדכון UI כפתורים
             document.getElementById('btnHe').classList.toggle('active', lang === 'he-IL');
             document.getElementById('btnEn').classList.toggle('active', lang === 'en-US');
             langDisplay.innerText = lang === 'he-IL' ? 'HE' : 'EN';
 
-            // אם מקליטים כרגע, צריך לאתחל את המנוע
             if (isRecording) {
                 recognition.stop(); 
-                // ה-onend יזהה ש-isRecording עדיין true ויפעיל מחדש עם השפה החדשה
-                
-                // עדכון זמני למשתמש
                 interimDisplay.innerText = "מחליף שפה...";
-                recognition.lang = currentLang; // עדכון הגדרת השפה
+                recognition.lang = currentLang;
             } else {
-                // אם לא מקליטים, רק מעדכנים את ההגדרה לפעם הבאה
                 recognition.lang = lang;
             }
         }
@@ -202,6 +190,7 @@
                     isRecording = false;
                     recognition.stop();
                     interimDisplay.innerText = "...";
+                    playFeedbackTone(300, 150); // צפצוף עצירה (נמוך)
                 }, 800);
             }
         }
@@ -242,7 +231,6 @@
             const now = new Date();
             const timeStr = now.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
             
-            // זיהוי שפה לטקסט הספציפי כדי ליישר אותו נכון
             const isEnglish = /^[A-Za-z0-9\s.,?!]*$/.test(text);
             const direction = isEnglish ? 'ltr' : 'rtl';
             const align = isEnglish ? 'text-left' : 'text-right';
@@ -255,13 +243,7 @@
             const div = document.createElement('div');
             div.className = `bg-white p-3 rounded border-r-4 ${currentLang === 'he-IL' ? 'border-teal-500' : 'border-indigo-500'} shadow-sm ${align} animate-[fadeIn_0.3s_ease-out]`;
             div.style.direction = direction;
-            
-            div.innerHTML = `
-                <span class="text-xs text-gray-400 block mb-1 font-mono flex justify-between">
-                    ${timeStr} ${flag}
-                </span>
-                <p class="text-gray-800 text-lg leading-relaxed">${text}</p>
-            `;
+            div.innerHTML = `<span class="text-xs text-gray-400 block mb-1 font-mono flex justify-between">${timeStr} ${flag}</span><p class="text-gray-800 text-lg leading-relaxed">${text}</p>`;
             
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
@@ -303,12 +285,28 @@
             transcriptData = JSON.parse(saved);
             if(transcriptData.length > 0) {
                 container.innerHTML = '';
-                transcriptData.forEach(i => addTranscriptEntry(i.text)); // Re-render simple
+                transcriptData.forEach(i => addTranscriptEntry(i.text));
             }
         }
 
         async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch {} }
         function releaseWakeLock() { if (wakeLock) wakeLock.release().then(() => wakeLock = null); }
+        
+        // פונקציית הסאונד ששכחנו
+        function playFeedbackTone(freq, duration) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.value = 0.1;
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                setTimeout(() => osc.stop(), duration);
+            } catch(e) { console.log("Audio context blocked by browser policy"); }
+        }
     </script>
 </body>
 </html>
