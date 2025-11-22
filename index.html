@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SafeScribe V4 Pro</title>
+    <title>SafeScribe V5 Hybrid</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -20,6 +20,9 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        
+        /* Language Toggle Animation */
+        .lang-btn.active { background-color: #e0e7ff; border-color: #6366f1; color: #4338ca; transform: scale(1.05); }
     </style>
 </head>
 <body class="bg-slate-50 text-gray-800 h-screen flex flex-col overflow-hidden">
@@ -27,11 +30,8 @@
     <header class="bg-slate-900 text-white p-3 shadow-lg flex-shrink-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <div class="relative">
-                    <i class="fas fa-microphone-lines text-teal-400 text-xl"></i>
-                    <span id="connectionDot" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full hidden"></span>
-                </div>
-                <h1 class="text-lg font-bold tracking-wide">SafeScribe <span class="text-[10px] bg-teal-600 px-1.5 py-0.5 rounded ml-1 align-middle">PRO V4</span></h1>
+                <i class="fas fa-globe-americas text-teal-400 text-xl"></i>
+                <h1 class="text-lg font-bold tracking-wide">SafeScribe <span class="text-[10px] bg-purple-600 px-1.5 py-0.5 rounded ml-1 align-middle">V5 HYBRID</span></h1>
             </div>
             <button onclick="newMeeting()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded border border-slate-600 transition flex items-center gap-2">
                 <i class="fas fa-file-circle-plus"></i> חדש
@@ -43,23 +43,33 @@
         
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex-shrink-0 z-40">
             
-            <div class="flex flex-col items-center mb-4">
+            <div class="flex flex-col items-center mb-2">
                 <div id="statusBadge" class="px-4 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500 mb-4 transition-all duration-300">
                     מוכן להקלטה
                 </div>
 
-                <div class="relative">
+                <div class="relative mb-4">
                     <button id="mainBtn" onclick="toggleRecording()" class="relative z-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95">
                         <i class="fas fa-microphone" id="btnIcon"></i>
                     </button>
                     <div id="pulseRing" class="absolute inset-0 rounded-full bg-red-500 opacity-0 transition-opacity duration-300"></div>
                 </div>
-                <p class="text-xs text-gray-400 mt-3">לחץ להתחלה • המתן לאדום • דבר</p>
+
+                <div class="flex bg-gray-100 p-1 rounded-lg gap-1 mb-2">
+                    <button onclick="changeLang('he-IL')" id="btnHe" class="lang-btn active px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-transparent transition-all flex items-center gap-2">
+                        <span>🇮🇱</span> עברית
+                    </button>
+                    <button onclick="changeLang('en-US')" id="btnEn" class="lang-btn px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 border border-transparent transition-all flex items-center gap-2">
+                        <span>🇺🇸</span> English
+                    </button>
+                </div>
+                <p class="text-[10px] text-gray-400">לחץ להחלפת שפה בזמן אמת</p>
             </div>
 
-            <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100 min-h-[60px] flex flex-col justify-center">
-                <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider mb-1">
-                    <i class="fas fa-bolt"></i> זיהוי בזמן אמת (לא סופי)
+            <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100 min-h-[50px] flex flex-col justify-center">
+                <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider mb-1 flex justify-between">
+                    <span><i class="fas fa-bolt"></i> זיהוי חי</span>
+                    <span id="currentLangDisplay" class="text-indigo-300">HE</span>
                 </span>
                 <p id="interimText" class="text-indigo-900 font-medium text-lg leading-tight min-h-[1.5rem]">...</p>
             </div>
@@ -67,18 +77,18 @@
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-grow flex flex-col relative overflow-hidden">
             <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
-                <span class="text-xs font-bold text-gray-500"><i class="fas fa-check-double text-green-500"></i> תמלול מאושר (סופי)</span>
+                <span class="text-xs font-bold text-gray-500"><i class="fas fa-check-double text-green-500"></i> היסטוריה</span>
                 <div class="flex gap-2">
                     <button onclick="exportTxt()" class="text-xs bg-white border border-gray-300 hover:bg-gray-50 px-2 py-1 rounded text-gray-700">
-                        <i class="fas fa-download"></i> הורד TXT
+                        <i class="fas fa-download"></i> TXT
                     </button>
                 </div>
             </div>
             
             <div id="transcriptContainer" class="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar scroll-smooth bg-white">
                 <div id="emptyState" class="flex flex-col items-center justify-center h-full text-gray-300 opacity-60">
-                    <i class="fas fa-microphone-alt text-5xl mb-4"></i>
-                    <p class="text-sm">ההיסטוריה תופיע כאן</p>
+                    <i class="fas fa-language text-5xl mb-4"></i>
+                    <p class="text-sm">התחל להקליט בעברית או באנגלית</p>
                 </div>
             </div>
         </div>
@@ -89,107 +99,114 @@
         let isRecording = false;
         let transcriptData = [];
         let wakeLock = null;
-        let finalTranscript = '';
+        let currentLang = 'he-IL'; // שפת ברירת מחדל
 
-        // אלמנטים
         const mainBtn = document.getElementById('mainBtn');
         const btnIcon = document.getElementById('btnIcon');
         const statusBadge = document.getElementById('statusBadge');
         const pulseRing = document.getElementById('pulseRing');
         const interimDisplay = document.getElementById('interimText');
         const container = document.getElementById('transcriptContainer');
+        const langDisplay = document.getElementById('currentLangDisplay');
 
-        // אתחול Speech API
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = true; // ממשיך להקליט
-            recognition.interimResults = true; // קריטי! מאפשר לראות טקסט לפני שהוא סופי
-            recognition.lang = 'he-IL';
+        // אתחול מערכת
+        function initRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = currentLang;
 
-            // 1. התחלה אמיתית (אחרי שהתחבר לשרת)
-            recognition.onstart = () => {
-                isRecording = true;
-                updateStatus('recording');
-                requestWakeLock();
-                // צפצוף קטן לתחילת הקלטה (אופציונלי)
-                playFeedbackTone(600, 100);
-            };
+                recognition.onstart = () => {
+                    isRecording = true;
+                    updateStatus('recording');
+                    requestWakeLock();
+                };
 
-            // 2. קבלת תוצאות (הלב של המערכת)
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        // זהו משפט שהסתיים ב-100%
-                        addTranscriptEntry(event.results[i][0].transcript);
-                    } else {
-                        // זהו משפט שעדיין מעובד (Live Preview)
-                        interimTranscript += event.results[i][0].transcript;
+                recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            addTranscriptEntry(event.results[i][0].transcript);
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
                     }
-                }
+                    if(interimTranscript) {
+                        interimDisplay.innerText = interimTranscript;
+                        interimDisplay.style.opacity = "1";
+                        // כיוון טקסט לפי שפה
+                        interimDisplay.style.direction = currentLang === 'he-IL' ? 'rtl' : 'ltr';
+                    }
+                };
 
-                // הצגת טקסט זמני בחלון העליון
-                if(interimTranscript) {
-                    interimDisplay.innerText = interimTranscript;
-                    interimDisplay.style.opacity = "1";
-                } else {
-                    interimDisplay.style.opacity = "0.5"; // הבהוב קטן כשהמשפט יורד למטה
-                }
-            };
-
-            // 3. סיום/ניתוק
-            recognition.onend = () => {
-                if (isRecording) {
-                    // אם המשתמש לא עצר, והמערכת התנתקה לבד -> חבר מחדש מיד
-                    console.log("Auto-reconnect...");
-                    recognition.start(); 
-                } else {
-                    updateStatus('idle');
-                    releaseWakeLock();
-                }
-            };
-            
-            recognition.onerror = (event) => {
-                console.error("Error:", event.error);
-                if (event.error === 'not-allowed') {
-                    alert("אין גישה למיקרופון");
-                    isRecording = false;
-                    updateStatus('idle');
-                }
-            };
-        } else {
-            alert("דפדפן לא נתמך. חובה להשתמש ב-Chrome.");
+                recognition.onend = () => {
+                    if (isRecording) {
+                        // הפעלה מחדש אוטומטית (גם אחרי החלפת שפה)
+                        recognition.start(); 
+                    } else {
+                        updateStatus('idle');
+                        releaseWakeLock();
+                    }
+                };
+                
+                recognition.onerror = (event) => {
+                    console.error("Error:", event.error);
+                    if (event.error === 'not-allowed') {
+                        isRecording = false;
+                        updateStatus('idle');
+                        alert("אין גישה למיקרופון");
+                    }
+                };
+            } else {
+                alert("דפדפן לא נתמך. חובה Chrome.");
+            }
         }
 
-        // לוגיקת הכפתור הראשי
+        initRecognition();
+
+        // החלפת שפה דינמית
+        function changeLang(lang) {
+            if (currentLang === lang) return; // אין שינוי
+            
+            currentLang = lang;
+            
+            // עדכון UI כפתורים
+            document.getElementById('btnHe').classList.toggle('active', lang === 'he-IL');
+            document.getElementById('btnEn').classList.toggle('active', lang === 'en-US');
+            langDisplay.innerText = lang === 'he-IL' ? 'HE' : 'EN';
+
+            // אם מקליטים כרגע, צריך לאתחל את המנוע
+            if (isRecording) {
+                recognition.stop(); 
+                // ה-onend יזהה ש-isRecording עדיין true ויפעיל מחדש עם השפה החדשה
+                
+                // עדכון זמני למשתמש
+                interimDisplay.innerText = "מחליף שפה...";
+                recognition.lang = currentLang; // עדכון הגדרת השפה
+            } else {
+                // אם לא מקליטים, רק מעדכנים את ההגדרה לפעם הבאה
+                recognition.lang = lang;
+            }
+        }
+
         function toggleRecording() {
             if (!recognition) return;
 
             if (!isRecording) {
-                // שלב א': מתחבר...
                 updateStatus('connecting');
-                try {
-                    recognition.start();
-                } catch (e) { console.error(e); updateStatus('idle'); }
+                try { recognition.start(); } catch (e) { console.error(e); }
             } else {
-                // שלב ב': עוצר... (Soft Stop)
-                // לא עוצרים מיד כדי לתת למילים אחרונות להגיע
                 updateStatus('processing');
-                
-                // מחכים שנייה קטנה לפני הניתוק
                 setTimeout(() => {
                     isRecording = false;
                     recognition.stop();
-                    playFeedbackTone(400, 150);
                     interimDisplay.innerText = "...";
-                }, 1000);
+                }, 800);
             }
         }
 
-        // ניהול מצבי UI (רמזור)
         function updateStatus(state) {
-            // איפוס מחלקות
             mainBtn.className = "relative z-10 rounded-full w-20 h-20 flex items-center justify-center text-3xl shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 text-white";
             pulseRing.className = "absolute inset-0 rounded-full opacity-0";
             
@@ -200,64 +217,61 @@
                     statusBadge.innerText = "מוכן להקלטה";
                     statusBadge.className = "px-4 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500 mb-4";
                     break;
-
                 case 'connecting':
                     mainBtn.classList.add('bg-yellow-500');
-                    btnIcon.className = "fas fa-spinner fa-spin"; // ספינר
-                    statusBadge.innerText = "מתחבר לשרת...";
-                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700 mb-4";
+                    btnIcon.className = "fas fa-spinner fa-spin";
+                    statusBadge.innerText = "טוען...";
                     break;
-
                 case 'recording':
                     mainBtn.classList.add('bg-red-500');
                     btnIcon.className = "fas fa-stop";
-                    pulseRing.classList.add('pulse-ring'); // הפעלת אנימציה
-                    statusBadge.innerHTML = '<i class="fas fa-circle text-[10px] animate-pulse mr-2"></i> מקליט בטוח';
+                    pulseRing.classList.add('pulse-ring');
+                    statusBadge.innerHTML = `<span class="flex items-center gap-2"><i class="fas fa-circle text-[10px] animate-pulse"></i> מקליט (${currentLang === 'he-IL' ? 'עברית' : 'אנגלית'})</span>`;
                     statusBadge.className = "px-4 py-1 rounded-full text-sm font-medium bg-red-50 text-red-600 border border-red-100 mb-4";
                     break;
-
                 case 'processing':
-                    mainBtn.classList.add('bg-gray-400', 'cursor-wait');
-                    btnIcon.className = "fas fa-hourglass-half fa-spin";
-                    statusBadge.innerText = "שומר מילים אחרונות...";
-                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-600 mb-4";
+                    mainBtn.classList.add('bg-gray-400');
+                    btnIcon.className = "fas fa-save";
+                    statusBadge.innerText = "שומר...";
                     break;
             }
         }
 
-        // הוספת שורה להיסטוריה
         function addTranscriptEntry(text) {
             if (!text.trim()) return;
-            
             const now = new Date();
             const timeStr = now.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
+            
+            // זיהוי שפה לטקסט הספציפי כדי ליישר אותו נכון
+            const isEnglish = /^[A-Za-z0-9\s.,?!]*$/.test(text);
+            const direction = isEnglish ? 'ltr' : 'rtl';
+            const align = isEnglish ? 'text-left' : 'text-right';
+            const flag = currentLang === 'he-IL' ? '' : '<span class="mr-1">🇺🇸</span>';
+
             transcriptData.push({ time: timeStr, text: text });
             
-            // ניקוי מצב התחלתי
-            if(document.getElementById('emptyState')) {
-                container.innerHTML = ''; 
-            }
+            if(document.getElementById('emptyState')) container.innerHTML = ''; 
 
-            // יצירת האלמנט
             const div = document.createElement('div');
-            div.className = "bg-white p-3 rounded border-r-4 border-teal-500 shadow-sm text-right animate-[fadeIn_0.3s_ease-out]";
+            div.className = `bg-white p-3 rounded border-r-4 ${currentLang === 'he-IL' ? 'border-teal-500' : 'border-indigo-500'} shadow-sm ${align} animate-[fadeIn_0.3s_ease-out]`;
+            div.style.direction = direction;
+            
             div.innerHTML = `
-                <span class="text-xs text-gray-400 block mb-1 font-mono">${timeStr}</span>
+                <span class="text-xs text-gray-400 block mb-1 font-mono flex justify-between">
+                    ${timeStr} ${flag}
+                </span>
                 <p class="text-gray-800 text-lg leading-relaxed">${text}</p>
             `;
             
             container.appendChild(div);
-            container.scrollTop = container.scrollHeight; // גלילה למטה
+            container.scrollTop = container.scrollHeight;
             saveToLocal();
-            
-            // איפוס חלון הלייב
             interimDisplay.innerText = "...";
         }
 
-        // ייצוא
         function exportTxt() {
             if (transcriptData.length === 0) { alert("אין תוכן"); return; }
-            let content = "SafeScribe Transcript\n=====================\n\n";
+            let content = "SafeScribe V5 Transcript\n========================\n\n";
             transcriptData.forEach(i => content += `[${i.time}] ${i.text}\n`);
             downloadFile(content);
         }
@@ -268,59 +282,33 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Meeting_${date}.txt`;
+            a.download = `SafeScribe_${date}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function newMeeting() {
             if(transcriptData.length > 0 && !confirm("למחוק הכל?")) return;
             transcriptData = [];
-            localStorage.removeItem('safeScribeV4');
+            localStorage.removeItem('safeScribeV5');
             location.reload();
         }
 
-        function saveToLocal() { localStorage.setItem('safeScribeV4', JSON.stringify(transcriptData)); }
+        function saveToLocal() { localStorage.setItem('safeScribeV5', JSON.stringify(transcriptData)); }
         
-        // טעינה
-        const saved = localStorage.getItem('safeScribeV4');
+        const saved = localStorage.getItem('safeScribeV5');
         if(saved) {
             transcriptData = JSON.parse(saved);
             if(transcriptData.length > 0) {
                 container.innerHTML = '';
-                transcriptData.forEach(i => {
-                    const div = document.createElement('div');
-                    div.className = "bg-white p-3 rounded border-r-4 border-teal-500 shadow-sm text-right opacity-70";
-                    div.innerHTML = `<span class="text-xs text-gray-400 block mb-1">${i.time}</span><p class="text-gray-800">${i.text}</p>`;
-                    container.appendChild(div);
-                });
+                transcriptData.forEach(i => addTranscriptEntry(i.text)); // Re-render simple
             }
         }
 
-        // עזרים
-        async function requestWakeLock() {
-            try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch {}
-        }
-        function releaseWakeLock() {
-            if (wakeLock) wakeLock.release().then(() => wakeLock = null);
-        }
-        
-        // צפצוף פידבק (כמו בווקי טוקי)
-        function playFeedbackTone(freq, duration) {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.frequency.value = freq;
-                osc.type = 'sine';
-                gain.gain.value = 0.1;
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                setTimeout(() => osc.stop(), duration);
-            } catch(e) {}
-        }
+        async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch {} }
+        function releaseWakeLock() { if (wakeLock) wakeLock.release().then(() => wakeLock = null); }
     </script>
 </body>
 </html>
