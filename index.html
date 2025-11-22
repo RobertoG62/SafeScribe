@@ -2,95 +2,97 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SafeScribe V2 - תמלול חכם</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SafeScribe V3 - תמלול יציב</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
         body { font-family: 'Rubik', sans-serif; }
+        
+        /* אנימציית הקלטה */
         .recording-pulse { animation: pulse 1.5s infinite; }
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+
+        /* עיצוב פס גלילה מותאם */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 h-screen flex flex-col overflow-hidden">
 
-    <header class="bg-slate-800 text-white p-4 shadow-md sticky top-0 z-50">
+    <header class="bg-slate-800 text-white p-3 shadow-md flex-shrink-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <i class="fas fa-wave-square text-teal-400 text-2xl"></i>
-                <h1 class="text-lg font-bold">SafeScribe <span class="text-xs bg-teal-600 px-1 rounded">V2.0</span></h1>
+                <i class="fas fa-shield-alt text-teal-400 text-xl"></i>
+                <h1 class="text-lg font-bold">SafeScribe <span class="text-xs bg-red-500 px-1 rounded">V3.0 Fix</span></h1>
             </div>
-            <button onclick="newMeeting()" class="text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded shadow transition">
+            <button onclick="newMeeting()" class="text-xs bg-gray-600 hover:bg-gray-700 px-3 py-1.5 rounded border border-gray-500 transition">
                 <i class="fas fa-eraser"></i> ישיבה חדשה
             </button>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto p-4 max-w-3xl">
+    <main class="flex-grow flex flex-col container mx-auto p-2 sm:p-4 max-w-3xl min-h-0">
         
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
-            <div class="text-center mb-6">
-                <p id="status" class="text-sm text-gray-500 mb-2">מוכן להקלטה</p>
-                <div class="flex justify-center gap-4">
-                    <button id="startBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl transition-all shadow-lg transform hover:scale-105">
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-3 flex-shrink-0 z-40 relative">
+            
+            <div class="text-center mb-4">
+                <p id="status" class="text-sm text-gray-500 mb-2 font-medium">מוכן להקלטה</p>
+                <div class="flex justify-center">
+                    <button id="startBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl transition-all shadow-lg transform active:scale-95">
                         <i class="fas fa-microphone"></i>
                     </button>
-                    <button id="stopBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-20 h-20 flex items-center justify-center text-3xl transition-all hidden">
+                    <button id="stopBtn" class="bg-red-500 hover:bg-red-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl transition-all hidden shadow-lg recording-pulse">
                         <i class="fas fa-stop"></i>
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="exportTxt()" class="bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fas fa-file-alt"></i>
-                    <span>הורד כטקסט נקי</span>
-                    <span class="text-xs opacity-70">(לסיכום)</span>
+                <button onclick="exportTxt()" class="bg-teal-600 hover:bg-teal-700 text-white p-2 rounded text-sm flex flex-col items-center justify-center shadow-sm">
+                    <i class="fas fa-file-alt text-lg mb-1"></i>
+                    <span class="font-medium">הורד TXT</span>
                 </button>
-                
-                <button onclick="exportJson()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fas fa-code"></i>
-                    <span>שמור גיבוי מלא</span>
-                    <span class="text-xs opacity-70">(להמשך עריכה)</span>
+                <button onclick="exportJson()" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-sm flex flex-col items-center justify-center shadow-sm">
+                    <i class="fas fa-code text-lg mb-1"></i>
+                    <span class="font-medium">גיבוי מלא</span>
                 </button>
-            </div>
-             <div class="mt-3 text-center">
-                <label for="fileInput" class="text-xs text-blue-600 cursor-pointer hover:underline">
-                    <i class="fas fa-upload"></i> טען גיבוי קודם
-                </label>
-                <input type="file" id="fileInput" accept=".json" class="hidden" onchange="importData(this)">
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm min-h-[300px] p-4 relative">
-            <div class="absolute top-0 right-0 bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-bl-lg">
-                <i class="fas fa-history"></i> היסטוריה
+        <div class="bg-white rounded-xl shadow-sm flex-grow flex flex-col relative overflow-hidden border border-gray-200">
+            <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center text-xs text-gray-500">
+                <span><i class="fas fa-align-right"></i> תוכן התמלול</span>
+                <span id="lineCount">0 שורות</span>
             </div>
-            <div id="transcriptContainer" class="space-y-3 mt-4 pb-10">
-                <div id="emptyState" class="text-center text-gray-300 py-10">
-                    <i class="fas fa-comment-dots text-4xl mb-3"></i>
-                    <p>התמלול יופיע כאן בזמן אמת...</p>
+            
+            <div id="transcriptContainer" class="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar scroll-smooth">
+                <div id="emptyState" class="text-center text-gray-300 py-10 flex flex-col items-center h-full justify-center">
+                    <i class="fas fa-comment-dots text-4xl mb-3 opacity-50"></i>
+                    <p>התמלול יופיע כאן...</p>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <footer class="text-center p-4 text-xs text-gray-400">
-        SafeScribe Local • נבנה ע"י רוברטו
-    </footer>
+    <button id="floatingStopBtn" onclick="stopRecording()" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 animate-bounce font-bold border-4 border-white">
+        <i class="fas fa-stop-circle"></i>
+        עצור הקלטה
+    </button>
 
     <script>
-        // משתנים גלובליים
         let recognition;
         let isRecording = false;
         let transcriptData = []; 
-        let wakeLock = null; // למניעת כיבוי מסך
+        let wakeLock = null;
 
         // אתחול זיהוי דיבור
         if ('webkitSpeechRecognition' in window) {
@@ -100,26 +102,22 @@
             recognition.lang = 'he-IL';
 
             recognition.onresult = (event) => {
-                let interimTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
                         addTranscriptEntry(event.results[i][0].transcript);
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
                     }
                 }
-                // עדכון סטטוס עם טקסט זמני אם רוצים (כרגע פשוט נחכה לסופי)
             };
 
             recognition.onerror = (event) => {
                 console.error("Speech error:", event.error);
-                document.getElementById('status').innerText = "שגיאה: " + event.error;
-                if(event.error === 'not-allowed') alert("חובה לאשר מיקרופון!");
+                if(event.error !== 'no-speech') {
+                    document.getElementById('status').innerText = "שגיאה: " + event.error;
+                }
             };
 
             recognition.onend = () => {
                 if (isRecording) {
-                    console.log("Restarting recognition...");
                     recognition.start();
                 } else {
                     toggleUI(false);
@@ -130,53 +128,53 @@
             alert("הדפדפן לא תומך. נא להשתמש בכרום.");
         }
 
-        // ניהול הקלטה
+        // שליטה בהקלטה
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+        const floatingBtn = document.getElementById('floatingStopBtn');
 
-        startBtn.onclick = async () => {
+        startBtn.onclick = startRecording;
+        stopBtn.onclick = stopRecording;
+
+        async function startRecording() {
             if (!recognition) return;
             try {
-                transcriptData = []; // אופציונלי: אם רוצים איפוס אוטומטי בהתחלה. כרגע נשאיר את זה ל"ישיבה חדשה"
                 recognition.start();
                 isRecording = true;
                 toggleUI(true);
-                requestWakeLock(); // הפעלת מניעת כיבוי מסך
+                requestWakeLock();
             } catch (e) { console.error(e); }
-        };
+        }
 
-        stopBtn.onclick = () => {
+        function stopRecording() {
             isRecording = false;
             recognition.stop();
             toggleUI(false);
             releaseWakeLock();
-        };
+        }
 
         function toggleUI(recording) {
             const status = document.getElementById('status');
             if (recording) {
                 startBtn.classList.add('hidden');
                 stopBtn.classList.remove('hidden');
-                stopBtn.classList.add('recording-pulse');
-                status.innerText = "מקליט... (המסך ישאר דולק)";
-                status.className = "text-red-500 font-bold animate-pulse mb-2";
+                floatingBtn.classList.remove('hidden'); // הצגת כפתור צף
+                status.innerHTML = '<span class="text-red-500"><i class="fas fa-circle fa-xs"></i> מקליט...</span>';
             } else {
                 startBtn.classList.remove('hidden');
                 stopBtn.classList.add('hidden');
-                stopBtn.classList.remove('recording-pulse');
+                floatingBtn.classList.add('hidden'); // הסתרת כפתור צף
                 status.innerText = "ההקלטה נעצרה";
-                status.className = "text-gray-500 mb-2";
             }
         }
 
-        // ניהול Wake Lock (מניעת כיבוי מסך)
+        // Wake Lock
         async function requestWakeLock() {
             try {
-                wakeLock = await navigator.wakeLock.request('screen');
-                console.log('Screen Wake Lock active');
-            } catch (err) {
-                console.error(`${err.name}, ${err.message}`);
-            }
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) { console.log(err); }
         }
 
         function releaseWakeLock() {
@@ -185,11 +183,11 @@
             }
         }
 
-        // הוספת טקסט למסך ולזיכרון
+        // הוספת טקסט
         function addTranscriptEntry(text) {
             if (!text.trim()) return;
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit', second: '2-digit'});
+            const timeStr = now.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
             
             transcriptData.push({ time: timeStr, text: text });
             render();
@@ -198,50 +196,43 @@
 
         function render() {
             const container = document.getElementById('transcriptContainer');
+            document.getElementById('lineCount').innerText = transcriptData.length + " שורות";
+
             if (transcriptData.length === 0) {
-                container.innerHTML = `<div id="emptyState" class="text-center text-gray-300 py-10"><i class="fas fa-comment-dots text-4xl mb-3"></i><p>התמלול יופיע כאן...</p></div>`;
+                container.innerHTML = `<div id="emptyState" class="text-center text-gray-300 py-10 flex flex-col items-center justify-center h-full"><i class="fas fa-comment-dots text-4xl mb-3"></i><p>התמלול יופיע כאן...</p></div>`;
                 return;
             }
             
             container.innerHTML = transcriptData.map(item => `
-                <div class="bg-gray-50 p-3 rounded border-r-4 border-teal-500 text-right">
+                <div class="bg-gray-50 p-3 rounded border-r-4 border-teal-500 text-right text-sm sm:text-base">
                     <span class="text-xs text-gray-400 block mb-1">${item.time}</span>
-                    <p class="text-gray-800">${item.text}</p>
+                    <p class="text-gray-800 leading-relaxed">${item.text}</p>
                 </div>
             `).join('');
             
-            window.scrollTo(0, document.body.scrollHeight);
+            // גלילה אוטומטית למטה בתוך המיכל הפנימי
+            container.scrollTop = container.scrollHeight;
         }
 
-        // --- כפתורי ייצוא וניהול ---
-
-        // 1. ייצוא לטקסט נקי (לסיכום)
+        // ייצוא TXT
         function exportTxt() {
             if (transcriptData.length === 0) { alert("אין תוכן לייצא"); return; }
-            
             let textContent = "SafeScribe Transcript\n=====================\n\n";
-            transcriptData.forEach(item => {
-                textContent += `[${item.time}] ${item.text}\n`;
-            });
-
+            transcriptData.forEach(item => { textContent += `[${item.time}] ${item.text}\n`; });
             downloadFile(textContent, 'txt', 'text/plain');
         }
 
-        // 2. ייצוא ל-JSON (לגיבוי)
+        // ייצוא JSON
         function exportJson() {
             if (transcriptData.length === 0) { alert("אין תוכן לשמור"); return; }
-            const jsonContent = JSON.stringify(transcriptData, null, 2);
-            downloadFile(jsonContent, 'json', 'application/json');
+            downloadFile(JSON.stringify(transcriptData, null, 2), 'json', 'application/json');
         }
 
-        // פונקציית עזר להורדה עם שם חכם
         function downloadFile(content, extension, mimeType) {
             const now = new Date();
-            // יצירת שם ייחודי עם תאריך ושעה: meeting_2023-10-25_14-30-05
             const dateStr = now.toISOString().slice(0,10);
             const timeStr = now.toTimeString().slice(0,8).replace(/:/g, '-');
             const filename = `meeting_${dateStr}_${timeStr}.${extension}`;
-
             const blob = new Blob([content], { type: mimeType });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -253,42 +244,21 @@
             URL.revokeObjectURL(url);
         }
 
-        // 3. ישיבה חדשה
         function newMeeting() {
-            if(transcriptData.length > 0 && !confirm("האם למחוק את התמלול הנוכחי ולהתחיל דף חדש? (וודא ששמרת לפני)")) return;
-            
+            if(transcriptData.length > 0 && !confirm("למחוק הכל ולהתחיל מחדש?")) return;
             transcriptData = [];
             saveToLocal();
             render();
-            document.getElementById('status').innerText = "התחלה חדשה ונקייה";
         }
 
-        // שמירה וטעינה אוטומטית
-        function saveToLocal() { localStorage.setItem('safeScribeData', JSON.stringify(transcriptData)); }
+        function saveToLocal() { localStorage.setItem('safeScribeDataV3', JSON.stringify(transcriptData)); }
         
         function loadFromLocal() {
-            const data = localStorage.getItem('safeScribeData');
+            const data = localStorage.getItem('safeScribeDataV3'); // מפתח חדש לגרסה 3 למניעת התנגשויות
             if (data) { transcriptData = JSON.parse(data); render(); }
         }
 
-        // טעינת קובץ גיבוי ישן
-        function importData(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    transcriptData = JSON.parse(e.target.result);
-                    saveToLocal();
-                    render();
-                    alert("הגיבוי נטען בהצלחה!");
-                } catch(err) { alert("שגיאה בקריאת הקובץ"); }
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
-
-        loadFromLocal(); // הפעלה ראשונית
+        loadFromLocal();
     </script>
 </body>
 </html>
