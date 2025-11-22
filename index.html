@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeetingNote - תמלול מאובטח</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
+        body { font-family: 'Rubik', sans-serif; }
+        .recording-pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <header class="bg-indigo-600 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-microphone-lines text-2xl"></i>
+                <h1 class="text-xl font-bold">MeetingNote המאובטח</h1>
+            </div>
+            <div class="text-xs bg-indigo-800 px-2 py-1 rounded">
+                <i class="fas fa-lock"></i> מקומי בלבד
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto p-4 max-w-3xl">
+        
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-4 z-10">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-700">בקרת הקלטה</h2>
+                <span id="status" class="text-sm text-gray-500">מוכן להקלטה</span>
+            </div>
+            
+            <div class="flex gap-4 justify-center mb-6">
+                <button id="startBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl transition-all shadow-lg">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="stopBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-16 h-16 flex items-center justify-center text-2xl transition-all hidden">
+                    <i class="fas fa-stop"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <i class="fas fa-search absolute top-3 right-3 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="חיפוש בתוכן הישיבה..." class="w-full pr-10 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="exportData()" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-file-export"></i> שמור
+                    </button>
+                    <label for="fileInput" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm cursor-pointer text-center">
+                        <i class="fas fa-file-import"></i> טען
+                    </label>
+                    <input type="file" id="fileInput" accept=".json" class="hidden" onchange="importData(this)">
+                    <button onclick="clearData()" class="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="transcriptContainer" class="space-y-4 pb-20">
+            <div id="emptyState" class="text-center text-gray-400 py-10">
+                <i class="fas fa-comments text-4xl mb-3"></i>
+                <p>התמלול יופיע כאן...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 p-4 text-center text-sm mt-auto">
+        <p>© נבנה ע"י רוברטו - סוכן בניית אפליקציות WEB</p>
+        <p class="text-xs mt-1 text-yellow-500">⚠️ שים לב: הנתונים נשמרים בדפדפן בלבד. גבה אותם!</p>
+    </footer>
+
+    <script>
+        // משתנים גלובליים
+        let recognition;
+        let isRecording = false;
+        let transcriptData = []; // מערך אובייקטים: {time, text}
+
+        // בדיקת תמיכה בדפדפן
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true; // ממשיך להקליט גם כשיש שתיקה
+            recognition.interimResults = true; // מציג תוצאות בזמן אמת
+            recognition.lang = 'he-IL'; // עברית
+        } else {
+            alert("הדפדפן שלך לא תומך בזיהוי דיבור. נא להשתמש ב-Chrome במחשב או באנדרואיד.");
+        }
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const status = document.getElementById('status');
+        const container = document.getElementById('transcriptContainer');
+        const emptyState = document.getElementById('emptyState');
+
+        // התחלת הקלטה
+        startBtn.onclick = () => {
+            if (!recognition) return;
+            recognition.start();
+            isRecording = true;
+            toggleButtons(true);
+            status.innerText = "מקליט... דבר ברור";
+            status.className = "text-red-500 font-bold animate-pulse";
+        };
+
+        // עצירת הקלטה
+        stopBtn.onclick = () => {
+            if (!recognition) return;
+            recognition.stop();
+            isRecording = false;
+            toggleButtons(false);
+            status.innerText = "ההקלטה נעצרה";
+            status.className = "text-gray-500";
+        };
+
+        function toggleButtons(recording) {
+            if (recording) {
+                startBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+                stopBtn.classList.add('recording-pulse');
+            } else {
+                startBtn.classList.remove('hidden');
+                stopBtn.classList.add('hidden');
+                stopBtn.classList.remove('recording-pulse');
+            }
+        }
+
+        // טיפול בתוצאות דיבור
+        if (recognition) {
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                        // הוספה למאגר הנתונים
+                        addTranscriptEntry(finalTranscript);
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech error:", event.error);
+                status.innerText = "שגיאה: " + event.error;
+                if (event.error === 'not-allowed') {
+                    alert("יש לאשר גישה למיקרופון!");
+                }
+                toggleButtons(false);
+            };
+            
+            // הפעלה מחדש אוטומטית אם ההקלטה מפסיקה בטעות
+            recognition.onend = () => {
+                if (isRecording) {
+                    recognition.start();
+                } else {
+                    toggleButtons(false);
+                }
+            };
+        }
+
+        // הוספת רשומה חדשה
+        function addTranscriptEntry(text) {
+            if (!text.trim()) return;
+            
+            const timestamp = new Date().toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
+            const entry = { id: Date.now(), time: timestamp, text: text };
+            
+            transcriptData.push(entry);
+            renderTranscript();
+            saveToLocal();
+        }
+
+        // הצגת הנתונים במסך
+        function renderTranscript(filterText = '') {
+            container.innerHTML = '';
+            
+            if (transcriptData.length === 0) {
+                container.appendChild(emptyState);
+                return;
+            }
+
+            const filteredData = transcriptData.filter(item => 
+                item.text.includes(filterText)
+            );
+
+            filteredData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "bg-white p-4 rounded-lg shadow border-r-4 border-indigo-500 hover:bg-gray-50 transition";
+                div.innerHTML = `
+                    <div class="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>${item.time}</span>
+                        <i class="fas fa-quote-left opacity-20"></i>
+                    </div>
+                    <p class="text-gray-800 leading-relaxed">${highlightText(item.text, filterText)}</p>
+                `;
+                container.appendChild(div);
+            });
+            
+            // גלילה למטה
+            if (!filterText) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        }
+
+        // הדגשת טקסט בחיפוש
+        function highlightText(text, filter) {
+            if (!filter) return text;
+            const regex = new RegExp(`(${filter})`, 'gi');
+            return text.replace(regex, '<span class="bg-yellow-200 font-bold text-yellow-800 px-1 rounded">$1</span>');
+        }
+
+        // חיפוש
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            renderTranscript(e.target.value);
+        });
+
+        // --- ניהול נתונים (Local Storage & Files) ---
+
+        function saveToLocal() {
+            localStorage.setItem('meetingData', JSON.stringify(transcriptData));
+        }
+
+        function loadFromLocal() {
+            const data = localStorage.getItem('meetingData');
+            if (data) {
+                transcriptData = JSON.parse(data);
+                renderTranscript();
+            }
+        }
+
+        // ייצוא לקובץ (עבור מעבר מנייד למחשב)
+        function exportData() {
+            if (transcriptData.length === 0) {
+                alert("אין מה לשמור עדיין!");
+                return;
+            }
+            const dataStr = JSON.stringify(transcriptData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0,10);
+            a.href = url;
+            a.download = `meeting_backup_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // טעינת קובץ (במחשב)
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if (Array.isArray(json)) {
+                        // שילוב נתונים קיימים עם חדשים או החלפה? כרגע נחליף.
+                        if(confirm("האם להחליף את התוכן הקיים בתוכן הקובץ?")) {
+                            transcriptData = json;
+                            saveToLocal();
+                            renderTranscript();
+                            alert("הנתונים נטענו בהצלחה!");
+                        }
+                    }
+                } catch (err) {
+                    alert("קובץ לא תקין!");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            // איפוס האינפוט כדי לאפשר טעינה חוזרת של אותו קובץ
+            input.value = '';
+        }
+
+        function clearData() {
+            if(confirm("בטוח שרוצים למחוק הכל?")) {
+                transcriptData = [];
+                localStorage.removeItem('meetingData');
+                renderTranscript();
+            }
+        }
+
+        // טעינה ראשונית
+        loadFromLocal();
+
+    </script>
+</body>
+</html>
