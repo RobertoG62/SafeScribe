@@ -2,12 +2,18 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- maximum-scale and user-scalable=no removed: they blocked pinch zoom entirely -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeScribe V5.1 Sound</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Built stylesheet in place of the Tailwind play CDN, which is a
+         development tool and fetched a script from a third party each load. -->
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/fontawesome.min.css">
+    <!-- Fonts and icons are served from this site. They used to come from
+         Google and cdnjs, so every visit disclosed the visitor's IP to two
+         third parties before anything happened on the page. -->
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
         body { font-family: 'Rubik', sans-serif; }
         
         .pulse-ring { animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
@@ -43,12 +49,12 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex-shrink-0 z-40">
             
             <div class="flex flex-col items-center mb-2">
-                <div id="statusBadge" class="px-4 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500 mb-4 transition-all duration-300">
+                <div id="statusBadge" class="px-4 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600 mb-4 transition-all duration-300">
                     מוכן להקלטה
                 </div>
 
                 <div class="relative mb-4">
-                    <button id="mainBtn" onclick="toggleRecording()" class="relative z-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    <button id="mainBtn" onclick="toggleRecording()" aria-label="התחל או עצור הקלטה" class="relative z-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95">
                         <i class="fas fa-microphone" id="btnIcon"></i>
                     </button>
                     <div id="pulseRing" class="absolute inset-0 rounded-full bg-red-500 opacity-0 transition-opacity duration-300"></div>
@@ -62,13 +68,13 @@
                         <span>🇺🇸</span> English
                     </button>
                 </div>
-                <p class="text-[10px] text-gray-400">צפצוף יישמע בתחילת הקלטה</p>
+                <p class="text-[10px] text-gray-600">צפצוף יישמע בתחילת הקלטה</p>
             </div>
 
             <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100 min-h-[50px] flex flex-col justify-center">
-                <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider mb-1 flex justify-between">
+                <span class="text-[10px] text-indigo-700 font-bold uppercase tracking-wider mb-1 flex justify-between">
                     <span><i class="fas fa-bolt"></i> זיהוי חי</span>
-                    <span id="currentLangDisplay" class="text-indigo-300">HE</span>
+                    <span id="currentLangDisplay" class="text-indigo-700">HE</span>
                 </span>
                 <p id="interimText" class="text-indigo-900 font-medium text-lg leading-tight min-h-[1.5rem]">...</p>
             </div>
@@ -85,7 +91,7 @@
             </div>
             
             <div id="transcriptContainer" class="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar scroll-smooth bg-white">
-                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-gray-300 opacity-60">
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-gray-500">
                     <i class="fas fa-language text-5xl mb-4"></i>
                     <p class="text-sm">התחל להקליט בעברית או באנגלית</p>
                 </div>
@@ -204,7 +210,7 @@
                     mainBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
                     btnIcon.className = "fas fa-microphone";
                     statusBadge.innerText = "מוכן להקלטה";
-                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500 mb-4";
+                    statusBadge.className = "px-4 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600 mb-4";
                     break;
                 case 'connecting':
                     mainBtn.classList.add('bg-yellow-500');
@@ -308,5 +314,14 @@
             } catch(e) { console.log("Audio context blocked by browser policy"); }
         }
     </script>
+<style>
+.policy-links{padding:18px 20px 26px;text-align:center;font-size:.8rem;line-height:1.85;color:#475569;border-top:1px solid #e2e8f0;background:#f8fafc}
+.policy-links p{margin:0 0 6px;max-width:62ch;margin-inline:auto}
+.policy-links a{color:#4338ca;text-decoration:underline}
+</style>
+<footer class="policy-links">
+  <p><b>התמלול מתבצע בשירות זיהוי הדיבור של הדפדפן — הקול משודר לשרתי Google.</b> ראו <a href="privacy.html">מדיניות פרטיות</a>.</p>
+  <p><a href="privacy.html">פרטיות</a> · <a href="terms.html">תנאי שימוש</a> · <a href="accessibility.html">נגישות</a></p>
+</footer>
 </body>
 </html>
