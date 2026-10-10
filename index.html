@@ -153,13 +153,25 @@
                     }
                 };
                 
+                // Errors that will repeat on every retry: stop and say why, instead of
+                // restarting forever while the button shows "recording".
+                // Chromium forks such as Comet or Brave lack Google's speech key and fail with 'network'.
+                // https://developer.mozilla.org/docs/Web/API/SpeechRecognitionErrorEvent/error
+                const fatalErrors = {
+                    'not-allowed': "אין גישה למיקרופון. אשר גישה למיקרופון בהגדרות הדפדפן.",
+                    'service-not-allowed': "הדפדפן הזה לא תומך בזיהוי דיבור. פתח את האתר ב-Chrome או ב-Edge.",
+                    'network': "אין חיבור לשירות זיהוי הדיבור. אם יש אינטרנט, הדפדפן כנראה לא תומך — פתח ב-Chrome או ב-Edge.",
+                    'audio-capture': "לא נמצא מיקרופון. בדוק שהמיקרופון מחובר.",
+                    'language-not-supported': "השפה שנבחרה לא נתמכת בדפדפן הזה."
+                };
+
                 recognition.onerror = (event) => {
                     console.error("Error:", event.error);
-                    if (event.error === 'not-allowed') {
-                        isRecording = false;
-                        updateStatus('idle');
-                        alert("אין גישה למיקרופון");
-                    }
+                    const message = fatalErrors[event.error];
+                    if (!message) return;
+                    isRecording = false;
+                    updateStatus('idle');
+                    alert(message);
                 };
             } else {
                 alert("דפדפן לא נתמך. חובה Chrome.");
