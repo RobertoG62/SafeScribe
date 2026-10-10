@@ -30,7 +30,9 @@
         .lang-btn.active { background-color: #e0e7ff; border-color: #6366f1; color: #4338ca; transform: scale(1.05); }
     </style>
 </head>
-<body class="bg-slate-50 text-gray-800 h-screen flex flex-col overflow-hidden">
+<!-- Page scrolls instead of being locked to screen height: the policy footer
+         squeezed the history panel (and its TXT button) down to a thin line. -->
+<body class="bg-slate-50 text-gray-800 flex flex-col" style="min-height:100vh">
 
     <header class="bg-slate-900 text-white p-3 shadow-lg flex-shrink-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
@@ -80,7 +82,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-grow flex flex-col relative overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-grow flex flex-col relative overflow-hidden" style="height:60vh;min-height:280px">
             <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
                 <span class="text-xs font-bold text-gray-500"><i class="fas fa-check-double text-green-500"></i> היסטוריה</span>
                 <div class="flex gap-2">
