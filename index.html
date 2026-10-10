@@ -303,12 +303,10 @@
         function saveToLocal() { localStorage.setItem('safeScribeV5', JSON.stringify(transcriptData)); }
         
         // Earlier versions re-saved the history on every page load, doubling it
-        // each time until the tab ran out of memory. Collapse it back to one copy.
+        // each time until the tab ran out of memory. Keep the first copy of each line.
         function dropRepeats(data) {
-            for (let p = 1; p < data.length; p++) {
-                if (data.every((item, i) => item.text === data[i % p].text)) return data.slice(0, p);
-            }
-            return data;
+            const seen = new Set();
+            return data.filter(item => !seen.has(item.text) && seen.add(item.text));
         }
 
         const saved = localStorage.getItem('safeScribeV5');
