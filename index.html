@@ -157,12 +157,12 @@
                 
                 // Errors that will repeat on every retry: stop and say why, instead of
                 // restarting forever while the button shows "recording".
-                // Chromium forks such as Comet or Brave lack Google's speech key and fail with 'network'.
+                // Some Chromium forks fail with 'network' when the mic or speech service is blocked.
                 // https://developer.mozilla.org/docs/Web/API/SpeechRecognitionErrorEvent/error
                 const fatalErrors = {
                     'not-allowed': "אין גישה למיקרופון. אשר גישה למיקרופון בהגדרות הדפדפן.",
                     'service-not-allowed': "הדפדפן הזה לא תומך בזיהוי דיבור. פתח את האתר ב-Chrome או ב-Edge.",
-                    'network': "אין חיבור לשירות זיהוי הדיבור. אם יש אינטרנט, הדפדפן כנראה לא תומך — פתח ב-Chrome או ב-Edge.",
+                    'network': "אין חיבור לשירות זיהוי הדיבור. בדוק את החיבור לאינטרנט ואת הרשאת המיקרופון בהגדרות הדפדפן. אם זה לא עוזר, נסה ב-Chrome או ב-Edge.",
                     'audio-capture': "לא נמצא מיקרופון. בדוק שהמיקרופון מחובר.",
                     'language-not-supported': "השפה שנבחרה לא נתמכת בדפדפן הזה."
                 };
