@@ -250,15 +250,19 @@
             if (!text.trim()) return;
             const now = new Date();
             const timeStr = now.toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'});
-            
+            transcriptData.push({ time: timeStr, text: text });
+            renderEntry(timeStr, text);
+            saveToLocal();
+            interimDisplay.innerText = "...";
+        }
+
+        function renderEntry(timeStr, text) {
             const isEnglish = /^[A-Za-z0-9\s.,?!]*$/.test(text);
             const direction = isEnglish ? 'ltr' : 'rtl';
             const align = isEnglish ? 'text-left' : 'text-right';
             const flag = currentLang === 'he-IL' ? '' : '<span class="mr-1">🇺🇸</span>';
 
-            transcriptData.push({ time: timeStr, text: text });
-            
-            if(document.getElementById('emptyState')) container.innerHTML = ''; 
+            if(document.getElementById('emptyState')) container.innerHTML = '';
 
             const div = document.createElement('div');
             div.className = `bg-white p-3 rounded border-r-4 ${currentLang === 'he-IL' ? 'border-teal-500' : 'border-indigo-500'} shadow-sm ${align} animate-[fadeIn_0.3s_ease-out]`;
@@ -267,8 +271,6 @@
             
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
-            saveToLocal();
-            interimDisplay.innerText = "...";
         }
 
         function exportTxt() {
@@ -300,13 +302,20 @@
 
         function saveToLocal() { localStorage.setItem('safeScribeV5', JSON.stringify(transcriptData)); }
         
+        // Earlier versions re-saved the history on every page load, doubling it
+        // each time until the tab ran out of memory. Collapse it back to one copy.
+        function dropRepeats(data) {
+            for (let p = 1; p < data.length; p++) {
+                if (data.every((item, i) => item.text === data[i % p].text)) return data.slice(0, p);
+            }
+            return data;
+        }
+
         const saved = localStorage.getItem('safeScribeV5');
         if(saved) {
-            transcriptData = JSON.parse(saved);
-            if(transcriptData.length > 0) {
-                container.innerHTML = '';
-                transcriptData.forEach(i => addTranscriptEntry(i.text));
-            }
+            transcriptData = dropRepeats(JSON.parse(saved));
+            saveToLocal();
+            transcriptData.forEach(i => renderEntry(i.time, i.text));
         }
 
         async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch {} }
